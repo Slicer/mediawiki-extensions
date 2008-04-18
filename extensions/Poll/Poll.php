@@ -29,7 +29,7 @@ function wfPoll() {
 
 function renderPoll( $input, $argv=array() ) {
         global $wgParser,$wgUser,$wgScriptPath,$wgTitle,$wgRequest,$wgArticlePath;
-        $wgImagePath=$wgScriptPath . "/extensions/Poll/images/";
+        $wgImagePath=$wgScriptPath . "/extensions/Poll/images";
 
         $title = $wgTitle->getText();
         $nspace = $wgTitle->getNameSpace();
@@ -406,7 +406,7 @@ and TIME_TO_SEC(title.poll_datemaxi)-TIME_TO_SEC(poll_info.poll_date)>2';
                         '<input type="hidden" name="poll_ID" value="'.($ID).'">'.
                         '<input type="hidden" name="answer" value="'.$i.'">'.
                         ($locked!=''?'':
-                        '<input type="image" align=texttop src="'.$wgImagePath.'/pool/button'.$small.'.gif" name="Vote" alt="Vote" name="Vote" '.
+                        '<input type="image" align=texttop src="'.$wgImagePath.'/button'.$small.'.gif" name="Vote" alt="Vote" name="Vote" '.
                                 ($small==''?'width=23 height=20':'width=17 height=13').'> ').ucfirst($lines[$i]).'  '.$smalltxt2.'</form></td>';
                         if ($total>0)
                                 {
@@ -414,9 +414,9 @@ and TIME_TO_SEC(title.poll_datemaxi)-TIME_TO_SEC(poll_info.poll_date)>2';
                                 $str .= '<td width=160'.($i%2==0?$bginfo2:$bginfo).'><font size=1>';
                                 $a = $deja_vote==""?"a":($deja_vote==$i?"c":"b");
                                 if ($res>0)
-                                        $str .= '<img src="'.$wgImagePath.'/pool/left'.$a.'.gif" height=10 width=4>'.
-                                '<img src="'.$wgImagePath.'/pool/middle'.$a.'.gif" alt="'.$res.' votes" height=10 width='.round($res*100/$total).'>'.
-                                '<img src="'.$wgImagePath.'/pool/right'.$a.'.gif" height=10 width=5>';
+                                        $str .= '<img src="'.$wgImagePath.'/left'.$a.'.gif" height=10 width=4>'.
+                                '<img src="'.$wgImagePath.'/middle'.$a.'.gif" alt="'.$res.' votes" height=10 width='.round($res*100/$total).'>'.
+                                '<img src="'.$wgImagePath.'/right'.$a.'.gif" height=10 width=5>';
                                 $str .= ' '.($res/$total>0.03?round($res*100/$total):round($res*1000/$total)/10).'% </font></td>';
                                 }
                         $str .= '</tr>';
