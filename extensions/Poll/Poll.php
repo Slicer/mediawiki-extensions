@@ -23,7 +23,7 @@ function wfPoll() {
         # the second parameter is the callback function for
         # processing the text between the tags
         $wgParser->setHook( "poll", "renderPoll" );
-	$wgParser->disableCache();
+  $wgParser->disableCache();
 }
 
 # The callback function for converting the input text to HTML output
@@ -41,7 +41,7 @@ function renderPoll( $input, $argv=array() ) {
 
 
 
-  $imagePath = $wgScriptPath . "/images/";
+  $imagePath = $wgScriptPath . "/extensions/Poll/images/";
   $wgParser->disableCache();
   if ($wgUser->mName == "") $user = wfGetIP(); else $user = $wgUser->mName;
   if (function_exists('memory_get_usage')) $memory = memory_get_usage(); else $memory = "unavailable";
