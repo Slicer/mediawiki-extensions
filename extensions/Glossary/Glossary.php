@@ -1,106 +1,115 @@
 <?php
+/*
+ * Copyright (C) 2007  BarkerJr
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 
-# Glossary MediaWiki Extention
-# Created by Benjamin Kahn (xkahn@zoned.net) edited by wvanbusk 20070717 and Jperl 20070810.
-#
-# Based on the Emoticon MediaWiki Extension written by Alex Wollangk (alex@wollangk.com)
-
-if ( !defined( 'MEDIAWIKI' ) ) {
-        die( 'This file is a MediaWiki extension, it is not a valid entry point' );
-}
-
-global $wgHooks;
-global $wgExtensionCredits;
-
-$wgExtensionFunctions[] = "wfTooltip";
-
+/*
+ * Download http://www.walterzorn.com/tooltip/tooltip_e.htm and extract it to $wgScriptPath/extensions/tooltip/
+ *
+ * Use definition-lists in the Glossary page.  Place one definition on each line.  For example:
+ * ;CS-S:CounterStrike Source, a game by Valve
+ * ;HTML:HyperText Markup Language
+ */
 $wgExtensionCredits['parserhook'][] = array(
-'name' => 'Glossary',
-'status' => 'stable',
-'type' => 'hook',
-'author' => 'Benjamin Kahn (xkahn@zoned.net) based on code by Alex Wollangk (alex@wollangk.com) editet by wvanbusk and Jperl',
-'version' => '1.0',
-'update' => '10-09-2007',
-'description' => 'Enable a Glossary within MediaWiki using tooltips.',
+  'name' => 'Glossary',
+  'description' => 'Provides tooltips from the [[glossary]] defined for all instances of the given term',
+  'version' => '2008.05.27',
+  'author' => 'BarkerJr, Sorin Sbarnea'
 );
 
-function wfTooltip() {
-        global $wgParser;
-        $wgParser->setHook( "tooltip", "tooltip" );
+$wgExtensionFunctions[] = 'glossarySetup';
+function glossarySetup() {
+  global $wgOut, $wgScriptPath;
+  $wgOut->addHTML("<script type='text/javascript' src='$wgScriptPath/extensions/tooltip/wz_tooltip.js'></script>");
 }
 
-$wgHooks['ParserBeforeStrip'][] = 'fnTooltips';
+$wgHooks['ParserBeforeTidy'][] = 'glossaryParser';
+function glossaryParser(&$parser, &$text) {
+  $rev = Revision::newFromTitle(Title::makeTitle(null, 'Glossary'));
+  if ($rev) {
+    $content = $rev->getText();
+    if ($content != "") {
+      $changed = false;
+      $doc = new DOMDocument();
+@     $doc->loadHTML('<meta http-equiv="content-type" content="charset=utf-8"/>' . $text);
 
-function tooltip ( $input ) {
-        $input = preg_replace ('/XQX/', '', $input);
-        $split = explode("|", $input, 2);
-        return "<span class=\"glossary\" title=\"" . $split[1] . "\">" . $split[0] . "</span>";
-}
+      // makes glossary definitions to be on only one row, not two
+      $content = str_replace("\n:",":",$content);
 
-// The callback function for replacing acronyms with tooltip tags
-function fnTooltips( &$parser, &$text, &$strip_state ) {
-        global $action; // Access the global "action" variable
-        // Only do the replacement if the action is not edit or history
-
-        if
-        (
-                $action !== 'edit'
-                        && $action !== 'history'
-                        && $action !== 'delete'
-                        && $action !== 'watch'
-                        && $parser->mTitle->getNamespace() != NS_SPECIAL
-                        && $parser->mTitle->mNamespace !== 8
-                        && $parser->mTitle->mTextform !== "Glossary"
-        )
-        {
-
-                $acro = array ();
-                $repl = array ();
-
-                // Get the list of emoticons from the "Glossary" article.
-                $title = Title::makeTitle( null , 'Glossary' );
-                $rev = Revision::newFromTitle( $title );
-                if( $rev )
-                {
-                    $content = $rev->getText();
-                }
-
-                // If the content successfully loaded, do the replacement
-                if( $content != "" )
-                {
-                        // makes glossary definitions to be on only one row, not two
-                        $content = str_replace("\n:",":",$content);
-
-                        $emoticonList = explode( "\n", $content );
-                        foreach( $emoticonList as $index => $emoticon )
-                        {
-                                $currEmoticon = explode( ":", $emoticon, 2 );
-
-                                if( count($currEmoticon) == 2 )
-                                {
-                                        // start by trimming the search value
-                                        $currEmoticon[ 0 ] = trim( $currEmoticon[ 0 ] );
-                                        // if the string begins with  ; lop it off
-                                        if( substr( $currEmoticon[ 0 ], 0, 1 ) == ';' )
-                                        {
-                                                $currEmoticon[ 0 ] = trim( substr( $currEmoticon[ 0 ], 1 ) );
-                                        }
-                                        // trim the replacement value
-                                        $currEmoticon[ 1 ] = trim( $currEmoticon[ 1 ] );
-                                        if($currEmoticon[0])
-                                        {
-                                                array_push ($acro, '/(^| |\n)' . $currEmoticon[ 0 ] . '(\b)/');
-                                                array_push ($repl, '$1<tooltip>XQX' . $currEmoticon[ 0 ] . "XQX|XQX" . $currEmoticon[ 1 ] . 'XQX</tooltip>');
-                                        }
-                                }
-                        }
-
-                        // and finally perform the replacement
-                        //echo "[" . join($repl,"<br>") ."]<br>";
-                        $text = preg_replace ( $acro, $repl, $text);
-                }
+      foreach (explode("\n", $content) as $entry) {
+        $terms = explode(':', $entry, 2);
+        if (count($terms) == 2) {
+          if (substr($terms[0], 0, 1) == ';') {
+            $term = trim(substr($terms[0], 1));
+            $definition = trim($terms[1]);
+            if (glossaryParseThisNode($doc, $doc->documentElement, $term)) {
+              $span = $doc->createElement('span');
+              $span->setAttribute('id', $term);
+              $span->setAttribute('style', 'display:none');
+              $span->appendChild($doc->createElement('b', $term));
+              $span->appendChild($doc->createTextNode(": $definition"));
+              $doc->documentElement->appendChild($span);
+              $changed = true;
+            }
+          }
         }
-        return true;
+      }
+      if ($changed) {
+        $text = $doc->saveHTML();
+      }
+    }
+  }
+  return true;
 }
 
+function glossaryParseThisNode($doc, $node, $term) {
+  $changed = false;
+  if ($node->nodeType == XML_TEXT_NODE) {
+    $texts = preg_split('/\b('.preg_quote($term).'s?)\b/iu', $node->textContent, -1, PREG_SPLIT_DELIM_CAPTURE);
+    if (count($texts) > 1) {
+      $container = $doc->createElement('span');
+      for ($x = 0; $x < count($texts); $x++) {
+        if ($x % 2) {
+          $span = $doc->createElement('span', $texts[$x]);
+          $span->setAttribute('onmouseover', "TagToTip('$term')");
+          $span->setAttribute('style', 'cursor:help');
+          $container->appendChild($span);
+        } else {
+          $container->appendChild($doc->createTextNode($texts[$x]));
+        }
+      }
+      $node->parentNode->replaceChild($container, $node);
+      $changed = true;
+    }
+  } elseif ($node->hasChildNodes()) {
+    // We have to do this because foreach gets confused by changing data
+    $nodes = $node->childNodes;
+    $previousLength = $nodes->length;
+    for ($x = 0; $x < $nodes->length; $x++) {
+      if ($nodes->length <> $previousLength) {
+        $x += $nodes->length - $previousLength;
+      }
+      $previousLength = $nodes->length;
+      $child = $nodes->item($x);
+      if (glossaryParseThisNode($doc, $child, $term)) {
+        $changed = true;
+      }
+    }
+  }
+  return $changed;
+}
 ?>
