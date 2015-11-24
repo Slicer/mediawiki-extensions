@@ -23,22 +23,26 @@ function wfGoogleCalendar() {
 }
 
 # The callback function for converting the input text to HTML output
-function renderGoogleCalendar($input) {
+function renderGoogleCalendar($input, array $args) {
         $input = htmlspecialchars($input);
-        //$input = "6444586097901795775"
-        $width = 425;
-        $height = 350;
 
-        $output = '<iframe src="http://www.google.com/calendar/embed?src=g43t277um81su1tjvgvah609qk%40group.calendar.google.com&pvttk=db8cdde758254dbe5a511723cac5da46&title=CSC-NZ&chrome=NAVIGATION&height=600&epr=4" style=" border-width:0 " width="480" frameborder="0" height="600"></iframe>';
-        $output = '<iframe src="http://www.google.com/calendar/embed?src='.$input.'&title=CSC-NZ&chrome=NAVIGATION&height=600&epr=4" style=" border-width:0 " width="480" frameborder="0" height="600"></iframe>';
+    $width = 480;
+    if( isset( $args['width'] ) && $args['width'] ) {
+      $width = $args['width'];
+    }
 
-        /*
+    $height = 600;
+    if( isset( $args['height'] ) && $args['height'] ) {
+      $height = $args['height'];
+    }
 
-        $output = '<embed style="width:'.$width.'px; height:'.$height.'px;" '
-                .'id="CalendarPlayback" type="application/x-shockwave-flash" '
-                .'src="http://calendar.google.com/googleplayer.swf?docId='
-                .$input.'"> </embed>';
-        */
+    $title = "Google Calendar";
+    if( isset( $args['title'] ) && $args['title'] ) {
+      $title = $args['title'];
+    }
+
+        $output = '<iframe src="http://www.google.com/calendar/embed?src='.$input.'&title='.$title.'&chrome=NAVIGATION&height='.$height.'&epr=4" style=" border-width:0 " width="'.$width.'" frameborder="0" height="'.$height.'"></iframe>';
+
         return $output;
 }
 ?>
