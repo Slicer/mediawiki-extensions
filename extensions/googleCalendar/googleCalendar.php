@@ -28,20 +28,40 @@ function renderGoogleCalendar($input, array $args) {
 
     $width = 480;
     if( isset( $args['width'] ) && $args['width'] ) {
-      $width = $args['width'];
+        $width = $args['width'];
     }
 
     $height = 600;
     if( isset( $args['height'] ) && $args['height'] ) {
-      $height = $args['height'];
+        $height = $args['height'];
     }
 
     $title = "Google Calendar";
     if( isset( $args['title'] ) && $args['title'] ) {
-      $title = $args['title'];
+        $title = $args['title'];
+    }
+    
+    $modeString = "";
+    if( isset( $args['mode'] ) && $args['mode'] ) {
+        if( strtolower($args['mode']) == "month" ) {
+            # Month is default, empty it
+            $modeString = "";
+        }else {
+            $modeString = 'mode='.$args['mode'];
+        }
     }
 
-    $output = '<iframe src="http://www.google.com/calendar/embed?src='.$input.'&title='.$title.'&chrome=NAVIGATION&height='.$height.'&epr=4" style=" border-width:0 " width="'.$width.'" frameborder="0" height="'.$height.'"></iframe>';
+    $dateString = "";
+    if( isset( $args['showDate'] ) && $args['showDate'] ) {
+        # Check date format
+        if( $timestamp = strtotime($args['showDate']) != false )
+        {
+            #dates=YYYYmmdd%2FYYYYmmdd
+            $dateString = '&dates='.date("YYYYmmdd", $timestamp).'%2F'.date("YYYYmmdd", $timestamp);
+        }
+    }
+
+    $output = '<iframe src="http://www.google.com/calendar/embed?'.$modeString.'&src='.$input.'&title='.$title.'&chrome=NAVIGATION&height='.$height.'&epr=4" style=" border-width:0 " width="'.$width.'" frameborder="0" height="'.$height.'"'.$dateString.'></iframe>';
 
     return $output;
 }
