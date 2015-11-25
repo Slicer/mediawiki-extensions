@@ -61,7 +61,7 @@ function renderGoogleCalendar($input, array $args) {
         }
     }
 
-    $output = '<iframe src="http://www.google.com/calendar/embed?'.$modeString.'&src='.$input.'&title='.$title.'&chrome=NAVIGATION&height='.$height.'&epr=4" style=" border-width:0 " width="'.$width.'" frameborder="0" height="'.$height.'"'.$dateString.'></iframe>';
+    $output = '<iframe src="http://www.google.com/calendar/embed?'.$modeString.'&src='.$input.'&title='.$title.'&chrome=NAVIGATION&height='.$height.'&epr=4'.$dateString.'" style=" border-width:0 " width="'.$width.'" frameborder="0" height="'.$height.'"></iframe>';
 
     return $output;
 }
